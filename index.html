@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kỷ Yếu - Đoàn Ngọc Minh Châu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mea+Culpa&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #1a1a2e;
+            --envelope-color: #3d2b56;
+            --envelope-dark: #2d1f42;
+            --paper-color: #eafffe;
+            --seal-color: #006d77;
+            --border-color: #d4af37;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: radial-gradient(circle at center, #2e2344, #1a1a2e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 100px;
+        }
+
+        /* Vỏ bao thư */
+        .envelope-wrapper {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            background-color: var(--envelope-color);
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            cursor: pointer;
+            z-index: 10;
+            perspective: 1000px;
+            /* Đảm bảo thư không thò ra ngoài khi chưa mở */
+            transition: all 0.3s;
+        }
+
+        .envelope-wrapper::after {
+            content: "🌙";
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 30px;
+            opacity: 0.3;
+            color: #f1c40f;
+        }
+
+        /* Nắp bao thư */
+        .flap {
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-top: 120px solid var(--envelope-color);
+            z-index: 40;
+            transform-origin: top;
+            transition: transform 0.6s ease, z-index 0.2s 0.3s;
+        }
+
+        /* Thân bao thư che phía trước */
+        .pocket {
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-bottom: 110px solid var(--envelope-dark);
+            z-index: 30;
+        }
+
+        .pocket::after {
+            content: "";
+            position: absolute;
+            left: -160px;
+            bottom: -110px;
+            width: 320px;
+            height: 110px;
+            background: var(--envelope-dark);
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .seal {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: var(--seal-color);
+            border-radius: 50%;
+            z-index: 50;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            transition: 0.4s;
+        }
+
+        /* Lá thư */
+        .letter {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            width: 300px;
+            height: 180px;
+            background-color: var(--paper-color);
+            z-index: 5; /* Nằm dưới túi và nắp */
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), height 0.8s, top 0.8s;
+            transform-style: preserve-3d;
+            border: 4px double var(--border-color);
+            opacity: 0; /* Ẩn hoàn toàn khi chưa mở */
+        }
+
+        /* Trạng thái mở */
+        .open .flap {
+            transform: rotateX(180deg);
+            z-index: 5;
+        }
+
+        .open .seal {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .open .letter {
+            top: -240px; 
+            height: 380px;
+            z-index: 60;
+            opacity: 1;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .letter.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        .back {
+            transform: rotateY(180deg);
+        }
+
+        /* Typography */
+        .classic-text { font-size: 18px; color: #444; margin: 2px 0; letter-spacing: 1px; }
+        .calligraphy {
+            font-family: 'Mea Culpa', cursive;
+            font-size: 48px;
+            color: var(--envelope-color);
+            margin: 10px 0;
+	font-weight: 400; 
+    line-height: 1.2;
+        }
+
+        input {
+            border: none; /* Bỏ gạch dưới */
+            background: transparent;
+            font-family: 'Mea Culpa', cursive;;
+            font-size: 42px;
+            text-align: center;
+            width: 90%;
+            outline: none;
+            color: var(--envelope-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #3d2b56;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-close {
+            background: #3d2b56;
+        }
+
+        .btn:hover { transform: scale(1.05);background-color: #4b3077; 
+    border-color: #4b3077; box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+
+        .hint {
+            margin-top: 30px;
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .envelope-wrapper { width: 280px; height: 190px; }
+            .flap, .pocket { border-left-width: 140px; border-right-width: 140px; }
+            .flap { border-top-width: 100px; }
+            .pocket { border-bottom-width: 90px; }
+            .pocket::after { width: 280px; left: -140px; bottom: -90px; height: 100px; }
+            .letter { width: 260px; left: 10px; }
+            .open .letter { top: -220px; height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="envelope-wrapper" id="env">
+            <div class="flap"></div>
+            <div class="seal"><span>✦</span></div>
+            <div class="pocket"></div>
+            
+            <div class="letter" id="letter">
+                <div class="face front">
+                    <p class="classic-text">Trân trọng mời</p>
+                    <input type="text" placeholder="Nhập tên..." onclick="event.stopPropagation()">
+                    <p class="classic-text">đến dự kỷ yếu của</p>
+                    <p class="calligraphy">Minh Châu</p>
+                </div>
+
+                <div class="face back">
+                    <p class="classic-text"><br><strong>Thời gian:</strong> 10h00 26/4/2026</p>
+                    <p class="classic-text"><br><strong>Địa điểm:</strong> Trường THPT Hoàng Hoa Thám</p>
+                    <div class="btn-group">
+                        <a href="https://share.google/NPhY9mwk6yg9KFOuI" target="_blank" class="btn" onclick="event.stopPropagation()">Xem map</a>
+                        <button class="btn btn-close" id="btnClose" onclick="closeLetter(event)">Cất thư</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <p class="hint">Chạm vào bao thư để mở<br>Chạm vào lá thư để lật mặt</p>
+    </div>
+
+    <script>
+        const env = document.getElementById('env');
+        const letter = document.getElementById('letter');
+        let isOpen = false;
+
+        // Mở thư
+        env.addEventListener('click', function() {
+            if (!isOpen) {
+                this.classList.add('open');
+                isOpen = true;
+            }
+        });
+
+        // Lật mặt
+        letter.addEventListener('click', function(e) {
+            if (isOpen) {
+                e.stopPropagation();
+                this.classList.toggle('flipped');
+            }
+        });
+
+        // Cất thư (Đóng)
+        function closeLetter(e) {
+            e.stopPropagation();
+            env.classList.remove('open');
+            letter.classList.remove('flipped'); // Reset về mặt trước khi cất
+            isOpen = false;
+        }
+    </script>
+</body>
+</html>
